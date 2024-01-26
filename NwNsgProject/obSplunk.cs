@@ -46,6 +46,12 @@ namespace nsgFunc
 
             foreach (var transmission in convertToSplunkList(newClientContent, log))
             {
+                var requestData = new
+                    {
+                        fields = new { product_id = "12462", used_for = "nsgflowlogs" },
+                        @event = transmission
+                    };
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(requestData);
                 var client = new SingleHttpClientInstance();
                 try
                 {
@@ -53,7 +59,7 @@ namespace nsgFunc
                     req.Headers.Accept.Clear();
                     req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     req.Headers.Add("Authorization", "Splunk " + splunkToken);
-                    req.Content = new StringContent(transmission, Encoding.UTF8, "application/json");
+                    req.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     HttpResponseMessage response = await SingleHttpClientInstance.SendToSplunk(req);
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
